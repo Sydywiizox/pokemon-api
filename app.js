@@ -18,7 +18,7 @@ app.use((req, res, next) => {
   // En production, remplacez * par votre domaine frontend
   const allowedOrigins =
     process.env.NODE_ENV === "production"
-      ? ["http://pokemon-trader.sydy.fr/"]
+      ? ["http://pokemon-trader.sydy.fr"]
       : ["http://localhost:3000"];
 
   const origin = req.headers.origin;
