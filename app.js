@@ -13,51 +13,33 @@ mongoose
   .then(() => console.log("Connexion à MongoDB réussie !"))
   .catch(() => console.log("Connexion à MongoDB échouée !"));
 
-// Configuration CORS - doit être avant toutes les routes
-app.use(
-  cors({
-    origin: function (origin, callback) {
-      const allowedOrigins = [
-        "http://localhost:5173",
-        "https://pokemon-trader.sydy.fr",
-      ];
-      if (!origin || allowedOrigins.includes(origin)) {
-        callback(null, true);
-      } else {
-        callback(new Error("Non autorisé par CORS"));
-      }
-    },
-    credentials: true,
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization"],
-    exposedHeaders: ["Content-Range", "X-Content-Range"],
-    maxAge: 86400,
-  })
-);
+// Configuration CORS simplifiée
+app.use(cors());
 
-// Middleware pour gérer les erreurs CORS
-app.use((err, req, res, next) => {
-  if (err.message === "Non autorisé par CORS") {
-    res.status(403).json({
-      message: "Non autorisé par CORS",
-      origin: req.headers.origin,
-    });
-  } else {
-    next(err);
-  }
-});
-
-// Middleware pour les en-têtes de sécurité
+// Middleware pour les en-têtes de sécurité et CORS
 app.use((req, res, next) => {
+  res.setHeader("Access-Control-Allow-Origin", "*");
+  res.setHeader(
+    "Access-Control-Allow-Methods",
+    "GET, POST, PUT, DELETE, OPTIONS"
+  );
+  res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
+  res.setHeader("Access-Control-Allow-Credentials", "true");
   res.setHeader("X-Content-Type-Options", "nosniff");
   res.setHeader("X-Frame-Options", "DENY");
   res.setHeader("X-XSS-Protection", "1; mode=block");
+
+  // Gérer les requêtes OPTIONS
+  if (req.method === "OPTIONS") {
+    return res.status(200).end();
+  }
+
   next();
 });
 
 app.use(express.json());
 
-// Ajouter cette ligne avec les autres routes
+// Routes
 app.use("/api/messages", messageRoutes);
 app.use("/api/auth", userRoutes);
 app.use("/api/offers", offerRoutes);
