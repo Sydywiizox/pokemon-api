@@ -86,26 +86,34 @@ exports.getUnreadMessages = async (req, res) => {
   }
 };
 
-// Marquer un message comme lu
+// Marquer les messages comme lus
 exports.markAsRead = async (req, res) => {
   try {
-    const message = await Message.findOneAndUpdate(
+    const { senderId, offerId } = req.body;
+
+    const result = await Message.updateMany(
       {
-        _id: req.params.messageId,
+        sender_id: senderId,
         receiver_id: req.auth.userId,
+        offer_id: offerId,
+        read: false,
       },
-      { read: true },
-      { new: true }
+      { read: true }
     );
 
-    if (!message) {
-      return res.status(404).json({ message: "Message non trouvé" });
+    if (result.modifiedCount === 0) {
+      return res
+        .status(200)
+        .json({ message: "Aucun message à marquer comme lu" });
     }
 
-    res.status(200).json({ message: "Message marqué comme lu" });
+    res.status(200).json({
+      message: "Messages marqués comme lus",
+      modifiedCount: result.modifiedCount,
+    });
   } catch (error) {
     res.status(500).json({
-      message: "Erreur lors de la mise à jour du message",
+      message: "Erreur lors de la mise à jour des messages",
       error: error.message,
     });
   }

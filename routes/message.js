@@ -8,8 +8,8 @@ router.post("/", auth, messageCtrl.createMessage);
 router.get("/conversations", auth, messageCtrl.getAllUserConversations);
 router.get("/conversation/:userId", auth, messageCtrl.getConversation);
 
-// Nouvelles routes
+// Routes pour les messages non lus
 router.get("/unread", auth, messageCtrl.getUnreadMessages);
-router.put("/:messageId/read", auth, messageCtrl.markAsRead);
+router.put("/read", auth, messageCtrl.markAsRead);
 
 module.exports = router;
