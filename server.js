@@ -1,5 +1,6 @@
 const http = require("http");
 const app = require("./app");
+const { Server } = require("socket.io");
 
 const normalizePort = (val) => {
   const port = parseInt(val, 10);
@@ -38,6 +39,28 @@ const errorHandler = (error) => {
 
 const server = http.createServer(app);
 
+// Configuration Socket.IO
+const io = new Server(server, {
+  cors: {
+    origin: ["https://pokemon-trader.sydy.fr", "http://localhost:5173"],
+    methods: ["GET", "POST"],
+    credentials: true,
+  },
+  transports: ["websocket", "polling"],
+});
+
+// Gestion des connexions Socket.IO
+io.on("connection", (socket) => {
+  console.log("Un client s'est connecté");
+
+  socket.on("disconnect", () => {
+    console.log("Un client s'est déconnecté");
+  });
+});
+
+// Rendre io accessible globalement
+app.set("io", io);
+
 server.on("error", errorHandler);
 server.on("listening", () => {
   const address = server.address();
@@ -52,5 +75,4 @@ if (require.main === module) {
   });
 }
 
-// Pour Passenger
-module.exports = app;
+module.exports = { app, io };
