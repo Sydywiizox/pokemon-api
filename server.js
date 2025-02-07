@@ -41,12 +41,17 @@ const server = http.createServer(app);
 
 // Configuration Socket.IO
 const io = new Server(server, {
+  path: "/socket.io/",
   cors: {
     origin: ["https://pokemon-trader.sydy.fr", "http://localhost:5173"],
-    methods: ["GET", "POST"],
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"],
     credentials: true,
   },
+  allowEIO3: true,
   transports: ["websocket", "polling"],
+  pingTimeout: 60000,
+  pingInterval: 25000,
 });
 
 // Gestion des connexions Socket.IO
@@ -55,6 +60,10 @@ io.on("connection", (socket) => {
 
   socket.on("disconnect", () => {
     console.log("Un client s'est déconnecté");
+  });
+
+  socket.on("error", (error) => {
+    console.error("Erreur Socket.IO:", error);
   });
 });
 
