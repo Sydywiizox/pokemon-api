@@ -11,6 +11,19 @@ exports.createMessage = async (req, res) => {
     });
 
     const savedMessage = await message.save();
+
+    // Récupérer le message avec les informations complètes
+    const populatedMessage = await Message.findById(savedMessage._id)
+      .populate("sender_id", "name")
+      .populate("receiver_id", "name")
+      .populate("offer_id");
+
+    // Émettre l'événement newMessage
+    const io = req.app.get("io");
+    if (io) {
+      io.emit("newMessage", populatedMessage);
+    }
+
     res.status(201).json({
       message: "Message envoyé avec succès",
       data: savedMessage,
