@@ -68,3 +68,45 @@ exports.getAllUserConversations = async (req, res) => {
     });
   }
 };
+
+// Récupérer le nombre de messages non lus
+exports.getUnreadMessages = async (req, res) => {
+  try {
+    const count = await Message.countDocuments({
+      receiver_id: req.auth.userId,
+      read: false,
+    });
+
+    res.status(200).json({ unread: count });
+  } catch (error) {
+    res.status(500).json({
+      message: "Erreur lors de la récupération des messages non lus",
+      error: error.message,
+    });
+  }
+};
+
+// Marquer un message comme lu
+exports.markAsRead = async (req, res) => {
+  try {
+    const message = await Message.findOneAndUpdate(
+      {
+        _id: req.params.messageId,
+        receiver_id: req.auth.userId,
+      },
+      { read: true },
+      { new: true }
+    );
+
+    if (!message) {
+      return res.status(404).json({ message: "Message non trouvé" });
+    }
+
+    res.status(200).json({ message: "Message marqué comme lu" });
+  } catch (error) {
+    res.status(500).json({
+      message: "Erreur lors de la mise à jour du message",
+      error: error.message,
+    });
+  }
+};
