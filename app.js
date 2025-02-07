@@ -13,36 +13,45 @@ mongoose
   .then(() => console.log("Connexion à MongoDB réussie !"))
   .catch(() => console.log("Connexion à MongoDB échouée !"));
 
-// Configuration CORS
+// Configuration CORS - doit être avant toutes les routes
 app.use(
   cors({
-    origin: ["http://localhost:5173", "https://pokemon-trader.sydy.fr"],
+    origin: function (origin, callback) {
+      const allowedOrigins = [
+        "http://localhost:5173",
+        "https://pokemon-trader.sydy.fr",
+      ];
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error("Non autorisé par CORS"));
+      }
+    },
+    credentials: true,
     methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allowedHeaders: ["Content-Type", "Authorization"],
-    credentials: true,
-    preflightContinue: false,
-    optionsSuccessStatus: 204,
+    exposedHeaders: ["Content-Range", "X-Content-Range"],
+    maxAge: 86400,
   })
 );
 
-// Middleware pour les en-têtes CORS personnalisés
+// Middleware pour gérer les erreurs CORS
+app.use((err, req, res, next) => {
+  if (err.message === "Non autorisé par CORS") {
+    res.status(403).json({
+      message: "Non autorisé par CORS",
+      origin: req.headers.origin,
+    });
+  } else {
+    next(err);
+  }
+});
+
+// Middleware pour les en-têtes de sécurité
 app.use((req, res, next) => {
-  const origin = req.headers.origin;
-  if (
-    origin === "http://localhost:5173" ||
-    origin === "https://pokemon-trader.sydy.fr"
-  ) {
-    res.setHeader("Access-Control-Allow-Origin", origin);
-  }
-  res.setHeader(
-    "Access-Control-Allow-Methods",
-    "GET, POST, PUT, DELETE, OPTIONS"
-  );
-  res.setHeader("Access-Control-Allow-Headers", "Content-Type, Authorization");
-  res.setHeader("Access-Control-Allow-Credentials", "true");
-  if (req.method === "OPTIONS") {
-    return res.sendStatus(204);
-  }
+  res.setHeader("X-Content-Type-Options", "nosniff");
+  res.setHeader("X-Frame-Options", "DENY");
+  res.setHeader("X-XSS-Protection", "1; mode=block");
   next();
 });
 
