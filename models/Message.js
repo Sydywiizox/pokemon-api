@@ -24,10 +24,6 @@ const messageSchema = mongoose.Schema({
     type: Date,
     default: Date.now,
   },
-  read: {
-    type: Boolean,
-    default: false,
-  },
 });
 
 // Créer le modèle

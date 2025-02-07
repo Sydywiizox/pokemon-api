@@ -69,23 +69,6 @@ exports.getAllUserConversations = async (req, res) => {
   }
 };
 
-// Récupérer le nombre de messages non lus
-exports.getUnreadMessages = async (req, res) => {
-  try {
-    const count = await Message.countDocuments({
-      receiver_id: req.auth.userId,
-      read: false,
-    });
-
-    res.status(200).json({ unread: count });
-  } catch (error) {
-    res.status(500).json({
-      message: "Erreur lors de la récupération des messages non lus",
-      error: error.message,
-    });
-  }
-};
-
 // Marquer les messages comme lus
 exports.markAsRead = async (req, res) => {
   try {
